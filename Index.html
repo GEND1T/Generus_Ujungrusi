@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <base target="_top">
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+      /* ==== PALET WARNA (dari file Anda) ==== */
+      :root {
+        --primary: #4a86e8; --primary-light: #e8f0fe; --primary-dark: #3a76d8;
+        --secondary: #6c757d; --success: #1e8e3e; --success-light: #e6f4ea;
+        --warning: #ffc107; --warning-light: #fff8e1; --danger: #d93025;
+        --danger-light: #fce8e6; --info: #17a2b8; --info-light: #e1f5fe;
+        --light: #f8f9fa; --dark: #343a40; --white: #ffffff;
+        --gray-50: #fafafa; --gray-100: #f5f5f5; --gray-200: #eeeeee;
+        --gray-300: #e0e0e0; --gray-400: #bdbdbd; --gray-500: #9e9e9e;
+        --gray-600: #757575; --gray-700: #616161; --gray-800: #424242;
+        --gray-900: #212121; --border-radius: 12px; --border-radius-sm: 8px;
+        --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        --box-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+        --transition: all 0.3s ease;
+        --font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: var(--font-family);
+        background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
+        color: var(--gray-800);
+        line-height: 1.6;
+        min-height: 100vh;
+        font-weight: 400;
+      }
+      .dashboard-container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+      
+      header { text-align: center; margin-bottom: 30px; padding: 25px 20px 20px; background: var(--white); border-radius: var(--border-radius); box-shadow: var(--box-shadow); position: relative; overflow: hidden; cursor: pointer; transition: var(--transition); }
+      header:before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(to right, var(--primary), var(--info)); }
+      header.expanded { padding-bottom: 10px; }
+      .header-content { position: relative; z-index: 2; }
+      h1 { color: var(--gray-800); font-weight: 700; margin: 0; font-size: 2rem; position: relative; display: inline-block; letter-spacing: -0.5px; }
+      h1 .highlight { color: var(--primary); position: relative; }
+      h1 .highlight:after { content: ''; position: absolute; bottom: 2px; left: 0; width: 100%; height: 6px; background: linear-gradient(to right, var(--primary), var(--info)); opacity: 0.3; border-radius: 3px; z-index: -1; }
+      .header-subtitle { color: var(--gray-600); font-size: 1rem; margin-top: 8px; font-weight: 400; }
+      .header-indicator { margin-top: 10px; color: var(--primary); font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 5px; }
+      .header-indicator i { transition: var(--transition); }
+      header.expanded .header-indicator i { transform: rotate(180deg); }
+      .header-menu { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; margin-top: 15px; }
+      header.expanded .header-menu { max-height: 200px; }
+      .mobile-menu-buttons { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; } /* Diubah ke 2 kolom */
+      .mobile-menu-button { padding: 12px 8px; background: var(--gray-50); border: none; border-radius: var(--border-radius-sm); transition: var(--transition); cursor: pointer; display: flex; flex-direction: column; align-items: center; text-align: center; font-size: 0.8rem; }
+      .mobile-menu-button:hover { background: var(--primary-light); transform: translateY(-2px); }
+      .mobile-menu-button i { font-size: 1.2rem; margin-bottom: 6px; color: var(--primary); }
+      .mobile-menu-button span { font-weight: 600; color: var(--gray-800); font-size: 0.75rem; }
+      h2 { color: var(--gray-800); font-weight: 600; margin-bottom: 20px; font-size: 1.5rem; letter-spacing: -0.3px; }
+      h3 { color: var(--gray-700); font-weight: 500; font-size: 1.2rem; margin: 25px 0 15px 0; padding-bottom: 10px; border-bottom: 1px solid var(--gray-200); }
+      .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; margin-bottom: 24px; }
+      .card { background-color: var(--white); border-radius: var(--border-radius); box-shadow: var(--box-shadow); padding: 24px; transition: var(--transition); position: relative; overflow: hidden; border: 1px solid var(--gray-100); }
+      .card:hover { transform: translateY(-5px); box-shadow: var(--box-shadow-lg); }
+      .card:before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(to right, var(--primary), var(--info)); }
+      .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+      .card-title { margin: 0; font-size: 1.3rem; color: var(--gray-800); font-weight: 600; display: flex; align-items: center; gap: 10px; }
+      .card-title i { color: var(--primary); font-size: 1.2rem; }
+      .card-content { height: 300px; display: flex; align-items: center; justify-content: center; }
+      .chart-container { width: 100%; height: 100%; position: relative; }
+      #loader, #dashboardLoader { font-size: 1.1em; font-weight: 500; text-align: center; padding: 40px; background: var(--white); border-radius: var(--border-radius); box-shadow: var(--box-shadow); display: flex; flex-direction: column; align-items: center; gap: 15px; }
+      .loader-spinner { width: 40px; height: 40px; border: 4px solid var(--gray-200); border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+      @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+      .top10-table-container { width: 100%; overflow-x: auto; margin-top: 15px; border-radius: var(--border-radius-sm); background: var(--white); border: 1px solid var(--gray-200); }
+      #top10_table { width: 100%; border-collapse: collapse; min-width: 350px; }
+      #top10_table th, #top10_table td { padding: 12px 8px; border-bottom: 1px solid var(--gray-200); text-align: left; font-size: 0.85rem; }
+      #top10_table th { background: linear-gradient(to right, var(--primary), var(--primary-dark)); color: var(--white); font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; position: sticky; top: 0; white-space: nowrap; }
+      #top10_table th:nth-child(1), #top10_table td:nth-child(1) { width: 50%; padding-left: 12px; max-width: 150px; }
+      #top10_table th:nth-child(2), #top10_table td:nth-child(2) { width: 25%; padding-left: 8px; max-width: 80px; white-space: normal; word-wrap: break-word; }
+      #top10_table th:nth-child(3), #top10_table td:nth-child(3) { width: 25%; text-align: center; padding-left: 5px; padding-right: 12px; max-width: 70px; }
+      #top10Header { text-align: center; }
+      tr:nth-child(even) { background-color: var(--gray-50); }
+      tr:hover { background-color: var(--gray-100); }
+      .alfa-count, .hadir-count, .izin-count { font-weight: bold; padding: 4px 8px; border-radius: 12px; display: inline-block; min-width: 35px; text-align: center; margin: 0 auto; font-size: 0.75rem; }
+      .alfa-count { background-color: var(--danger-light); color: var(--danger); border: 1px solid rgba(217, 48, 37, 0.2); }
+      .hadir-count { background-color: var(--success-light); color: var(--success); border: 1px solid rgba(30, 142, 62, 0.2); }
+      .izin-count { background-color: var(--info-light); color: var(--info); border: 1px solid rgba(23, 162, 184, 0.2); }
+      .card-actions { display: flex; gap: 10px; }
+      #monthToggleButton { padding: 8px 12px; font-size: 0.8em; font-weight: 500; color: var(--white); background: linear-gradient(to right, var(--primary), var(--primary-dark)); border: none; border-radius: 20px; cursor: pointer; transition: var(--transition); box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); display: flex; align-items: center; gap: 6px; }
+      #monthToggleButton:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); }
+      #monthToggleButton:disabled { background: var(--gray-400); cursor: not-allowed; transform: none; box-shadow: none; }
+      .filter-group { display: flex; align-items: center; gap: 8px; background: var(--gray-50); padding: 6px 10px; border-radius: var(--border-radius-sm); }
+      .filter-group label { font-weight: 500; color: var(--gray-700); font-size: 0.8rem; }
+      #top10Filter { padding: 6px 10px; border: 1px solid var(--gray-300); border-radius: var(--border-radius-sm); background-color: var(--white); font-size: 0.8rem; color: var(--gray-700); cursor: pointer; transition: var(--transition); min-width: 140px; }
+      #top10Filter:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(74, 134, 232, 0.2); }
+      .report-section .card { margin-top: 20px; }
+      .wa-links-container, .monthly-report-links-container { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 15px; }
+      .wa-link, #downloadCsvBtn { display: none; padding: 12px 18px; font-size: 13px; font-weight: 600; color: white; border-radius: var(--border-radius-sm); text-decoration: none; transition: var(--transition); text-align: center; cursor: pointer; border: none; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); position: relative; overflow: hidden; display: flex; align-items: center; gap: 6px; min-width: 180px; justify-content: center; }
+      .wa-link:before, #downloadCsvBtn:before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent); transition: 0.5s; }
+      .wa-link:hover:before, #downloadCsvBtn:hover:before { left: 100%; }
+      .wa-link:hover, #downloadCsvBtn:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); }
+      #btn-pra-nikah { background: linear-gradient(to right, #25D366, #1DA851); }
+      #btn-pra-remaja { background: linear-gradient(to right, #007BFF, #0056b3); }
+      #btn-remaja { background: linear-gradient(to right, #FFC107, #e0a800); }
+      #downloadCsvBtn { background: linear-gradient(to right, #673ab7, #5e35b1); }
+      #wa-links-error, #report-links-error { font-size: 0.8em; color: var(--danger); width: 100%; padding: 10px; background-color: rgba(217, 48, 37, 0.05); border-radius: var(--border-radius-sm); border-left: 4px solid var(--danger); display: flex; align-items: center; gap: 6px; }
+      #report-links-loader { font-style: italic; display: none; color: var(--info); padding: 10px; background-color: var(--info-light); border-radius: var(--border-radius-sm); width: 100%; text-align: center; font-size: 0.9rem; }
+      .stats-card { background: var(--white); border-radius: var(--border-radius); box-shadow: var(--box-shadow); padding: 20px; margin-bottom: 24px; }
+      .stats-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+      .stat-item { text-align: center; padding: 12px 8px; border-radius: var(--border-radius-sm); transition: var(--transition); }
+      .stat-item:hover { background: var(--gray-50); transform: translateY(-2px); }
+      .stat-value { font-size: 1.4rem; font-weight: 700; margin: 6px 0; color: var(--gray-800); }
+      .stat-label { font-size: 0.75rem; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+      .stat-icon { font-size: 1rem; margin-bottom: 4px; color: var(--gray-500); }
+      .stat-item.hadir .stat-value { color: var(--success); }
+      .stat-item.izin .stat-value { color: var(--info); }
+      .stat-item.alfa .stat-value { color: var(--danger); }
+      .stat-item.total .stat-value { color: var(--primary); }
+      .desktop-menu-buttons { display: none; }
+      @media (max-width: 768px) { .dashboard-container { padding: 12px; } header { padding: 20px 15px 15px; margin-bottom: 20px; } h1 { font-size: 1.6rem; } .header-subtitle { font-size: 0.9rem; } .dashboard-grid { grid-template-columns: 1fr; gap: 16px; } .card { padding: 18px; } .card-header { flex-direction: column; align-items: flex-start; gap: 12px; margin-bottom: 15px; } .card-actions { width: 100%; justify-content: space-between; } .filter-group { width: 100%; justify-content: space-between; gap: 6px; } #top10Filter { min-width: 120px; font-size: 0.75rem; } .stats-container { grid-template-columns: repeat(4, 1fr); gap: 8px; } .stat-item { padding: 8px 4px; } .stat-value { font-size: 1.2rem; } .stat-label { font-size: 0.7rem; } .stat-icon { font-size: 0.9rem; } .card-content { height: 280px; } .wa-links-container, .monthly-report-links-container { flex-direction: column; } .wa-link, #downloadCsvBtn { width: 100%; min-width: auto; font-size: 0.85rem; padding: 10px 15px; } .top10-table-container { margin-top: 10px; } #top10_table { min-width: 320px; } #top10_table th, #top10_table td { padding: 10px 6px; font-size: 0.8rem; } #top10_table th:nth-child(1), #top10_table td:nth-child(1) { width: 50%; padding-left: 10px; max-width: 130px; } #top10_table th:nth-child(2), #top10_table td:nth-child(2) { width: 25%; padding-left: 6px; max-width: 70px; white-space: normal; word-wrap: break-word; line-height: 1.2; } #top10_table th:nth-child(3), #top10_table td:nth-child(3) { width: 25%; padding-left: 3px; padding-right: 10px; max-width: 60px; } .alfa-count, .hadir-count, .izin-count { min-width: 30px; padding: 3px 6px; font-size: 0.7rem; } .mobile-menu-buttons { grid-template-columns: repeat(2, 1fr); gap: 8px; } /* Diubah ke 2 kolom */ .mobile-menu-button { padding: 10px 6px; font-size: 0.75rem; } .mobile-menu-button i { font-size: 1rem; } }
+      @media (max-width: 480px) { .dashboard-container { padding: 8px; } header { padding: 15px 12px 12px; } h1 { font-size: 1.4rem; } .header-subtitle { font-size: 0.85rem; } .stats-container { grid-template-columns: repeat(2, 1fr); gap: 10px; } .stat-item { padding: 10px 6px; } .stat-value { font-size: 1.3rem; } .card-header { align-items: stretch; } .filter-group { flex-direction: column; align-items: flex-start; gap: 6px; } #top10Filter { width: 100%; min-width: auto; } .mobile-menu-buttons { grid-template-columns: 1fr; gap: 8px; } .mobile-menu-button { padding: 10px; } .card-content { height: 250px; } #top10_table th:nth-child(2), #top10_table td:nth-child(2) { max-width: 60px; font-size: 0.75rem; } }
+      @media (min-width: 769px) { .mobile-menu-buttons { display: none; } .desktop-menu-buttons { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-bottom: 30px; } /* Diubah ke 2 kolom */ .desktop-menu-button { padding: 24px; background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--border-radius); box-shadow: none; transition: var(--transition); cursor: pointer; display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; overflow: hidden; } .desktop-menu-button:before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(to right, var(--primary), var(--info)); opacity: 0; transition: var(--transition); } .desktop-menu-button:hover { transform: translateY(-5px); box-shadow: var(--box-shadow-lg); border-color: var(--white); } .desktop-menu-button:hover:before { opacity: 1; } .desktop-menu-button i { font-size: 2.2rem; margin-bottom: 16px; color: var(--primary); transition: var(--transition); } .desktop-menu-button:hover i { transform: scale(1.1); } .desktop-menu-button-title { font-size: 1.15rem; font-weight: 600; color: var(--gray-800); margin-bottom: 6px; } .desktop-menu-button-desc { font-size: 0.9rem; color: var(--gray-600); line-height: 1.5; } }
+      @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+      .loading { animation: pulse 1.5s ease-in-out infinite; }
+      html { scroll-behavior: smooth; }
+      
+      /* ==== PEMISAH BAGIAN BARU ==== */
+      .section-divider {
+        border: none;
+        height: 1px;
+        background-color: var(--gray-300);
+        margin: 32px 0; /* Memberi jarak vertikal */
+      }
+      
+      /* ==== KARTU AI SUMMARY BARU ==== */
+      .ai-summary-card {
+        background: linear-gradient(135deg, var(--primary-light), #f0f4ff);
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        padding: 24px;
+        margin-bottom: 24px;
+        border: 1px solid var(--primary);
+        border-left: 5px solid var(--primary-dark);
+      }
+      .ai-summary-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 15px;
+      }
+      .ai-summary-header i {
+        font-size: 1.5rem;
+        color: var(--primary-dark);
+      }
+      .ai-summary-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0;
+      }
+      .ai-summary-content {
+        font-size: 0.95rem;
+        color: var(--gray-700);
+        line-height: 1.7;
+      }
+      /* Style untuk markdown dari AI */
+      .ai-summary-content strong {
+        color: var(--primary-dark);
+        font-weight: 700;
+      }
+      .ai-summary-content ul {
+        margin-top: 10px;
+        margin-left: 20px;
+        padding-left: 0;
+      }
+      .ai-summary-content li {
+        margin-bottom: 5px;
+      }
+      .ai-summary-loader {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.95rem;
+        color: var(--gray-600);
+        font-style: italic;
+      }
+      
+      /* ================================ */
+      /* STYLES UNTUK CHATBOT AI (BARU) */
+      /* ================================ */
+      .ai-chat-button {
+        position: fixed;
+        bottom: 25px;
+        right: 25px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        z-index: 1000;
+        transition: all 0.3s ease;
+      }
+      .ai-chat-button:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+      }
+      .ai-chat-container {
+        position: fixed;
+        bottom: 95px;
+        right: 25px;
+        width: 370px;
+        height: 550px;
+        background: var(--white);
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow-lg);
+        z-index: 1001;
+        display: none; /* Mulai tersembunyi */
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid var(--gray-200);
+      }
+      .ai-chat-container.open { display: flex; animation: slideUp 0.3s ease; }
+      @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+      .ai-chat-header {
+        background: linear-gradient(to right, var(--primary), var(--info));
+        color: white;
+        padding: 15px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .ai-chat-title { font-weight: 600; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
+      .ai-chat-close { background: none; border: none; color: white; opacity: 0.8; font-size: 1.2rem; cursor: pointer; transition: opacity 0.2s; }
+      .ai-chat-close:hover { opacity: 1; }
+      .ai-chat-messages {
+        flex: 1;
+        padding: 15px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        background: var(--gray-50);
+      }
+      .ai-message {
+        max-width: 85%;
+        padding: 10px 14px;
+        border-radius: 18px;
+        line-height: 1.4;
+        font-size: 0.9rem;
+        position: relative;
+        white-space: pre-wrap; /* Jaga format AI */
+      }
+      .ai-message.user {
+        align-self: flex-end;
+        background: var(--primary);
+        color: white;
+        border-bottom-right-radius: 5px;
+      }
+      .ai-message.bot {
+        align-self: flex-start;
+        background: var(--white);
+        color: var(--gray-800);
+        border: 1px solid var(--gray-200);
+        border-bottom-left-radius: 5px;
+      }
+      /* Style untuk markdown di jawaban bot */
+      .ai-message.bot strong { color: var(--primary-dark); }
+      .ai-message.bot ul { margin-top: 5px; margin-left: 20px; }
+      
+      .ai-message-time { font-size: 0.7rem; opacity: 0.7; margin-top: 4px; text-align: right; }
+      .ai-chat-input-container {
+        padding: 15px;
+        border-top: 1px solid var(--gray-200);
+        background: var(--white);
+        display: flex;
+        gap: 10px;
+      }
+      .ai-chat-input {
+        flex: 1;
+        padding: 10px 15px;
+        border: 1px solid var(--gray-300);
+        border-radius: 20px;
+        outline: none;
+        font-size: 0.9rem;
+        resize: none;
+      }
+      .ai-chat-input:focus { border-color: var(--primary); }
+      .ai-chat-send {
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .ai-chat-send:hover:not(:disabled) { transform: scale(1.05); }
+      .ai-chat-send:disabled { background: var(--gray-300); cursor: not-allowed; }
+      .ai-typing-indicator { display: flex; align-items: center; gap: 5px; padding: 10px 14px; background: var(--white); border: 1px solid var(--gray-200); border-radius: 18px; border-bottom-left-radius: 5px; align-self: flex-start; font-size: 0.8rem; color: var(--gray-600); }
+      .ai-typing-dots { display: flex; gap: 3px; }
+      .ai-typing-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gray-500); animation: typingPulse 1.5s infinite ease-in-out; }
+      .ai-typing-dot:nth-child(2) { animation-delay: 0.2s; }
+      .ai-typing-dot:nth-child(3) { animation-delay: 0.4s; }
+      @keyframes typingPulse { 0%, 60%, 100% { transform: scale(1); opacity: 0.5; } 30% { transform: scale(1.2); opacity: 1; } }
+      
+      @media (max-width: 480px) {
+        .ai-chat-container {
+          width: calc(100vw - 20px); /* Lebar penuh di mobile */
+          height: calc(100vh - 80px); /* Hampir penuh */
+          right: 10px;
+          left: 10px;
+          bottom: 80px;
+        }
+        .ai-chat-button {
+          bottom: 15px;
+          right: 15px;
+        }
+      }
+      
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        
+        <header id="mainHeader">
+            <div class="header-content">
+                <h1>Dashboard <span class="highlight">Rekap Absensi</span></h1>
+                <p class="header-subtitle">Sistem Monitoring Kehadiran Generus</p>
+            </div>
+            <div class="header-menu">
+                <div class="mobile-menu-buttons">
+                    <button class="mobile-menu-button" id="btnJadwalGuru"><i class="fas fa-chalkboard-teacher"></i><span>Ruang Pengajar</span></button>
+                    <button class="mobile-menu-button" id="btnLaporan"><i class="fas fa-file-alt"></i><span>Laporan Absensi</span></button>
+                </div>
+            </div>
+        </header>
+
+        <div class="desktop-menu-buttons">
+            <button class="desktop-menu-button" id="desktopBtnJadwalGuru"><i class="fas fa-chalkboard-teacher"></i><div class="desktop-menu-button-title">Ruang Pengajar</div><div class="desktop-menu-button-desc">Akses web app penjadwalan</div></button>
+            <button class="desktop-menu-button" id="desktopBtnLaporan"><i class="fas fa-file-alt"></i><div class="desktop-menu-button-title">Laporan Absensi</div><div class="desktop-menu-button-desc">Lihat dan ekspor laporan</div></button>
+        </div>
+
+        <div id="loader">
+            <div class="loader-spinner"></div>
+            <p>Generus Ujungrusi...</p>
+        </div>
+
+        <div id="content" style="display:none;">
+            
+            <div id="dashboardLoader" style="display:none;">
+                <div class="loader-spinner"></div>
+                <p></p>
+            </div>
+            
+            <div id="dashboardContent">
+                
+                <div class="ai-summary-card" id="aiSummaryCard">
+                  <div class="ai-summary-header">
+                    <i class="fas fa-brain"></i>
+                    <h2 class="ai-summary-title">Ringkasan AI Proaktif</h2>
+                  </div>
+                  <div class="ai-summary-content" id="aiSummaryContent">
+                    <div class="ai-summary-loader" id="aiSummaryLoader">
+                      <div class="loader-spinner" style="width: 20px; height: 20px; border-width: 3px;"></div>
+                      <span>Membuat ringkasan proaktif...</span>
+                    </div>
+                  </div>
+                </div>
+                <hr class="section-divider"> <div class="stats-card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-chart-line"></i>
+                            Ringkasan Statistik
+                        </h2>
+                    </div>
+                    <div class="stats-container" id="statsContainer" style="display:none;">
+                        <div class="stat-item hadir"><div class="stat-icon"><i class="fas fa-user-check"></i></div><div class="stat-value" id="statHadir">0</div><div class="stat-label">Total Hadir</div></div>
+                        <div class="stat-item izin"><div class="stat-icon"><i class="fas fa-user-clock"></i></div><div class="stat-value" id="statIzin">0</div><div class="stat-label">Total Izin</div></div>
+                        <div class="stat-item alfa"><div class="stat-icon"><i class="fas fa-user-times"></i></div><div class="stat-value" id="statAlfa">0</div><div class="stat-label">Total Alfa</div></div>
+                        <div class="stat-item total"><div class="stat-icon"><i class="fas fa-users"></i></div><div class="stat-value" id="statTotal">0</div><div class="stat-label">Total Generus</div></div>
+                    </div>
+                </div>
+                
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <i class="fas fa-chart-pie"></i>
+                                <span id="pieChartTitle">Persentase Kehadiran</span>
+                            </h2>
+                            <div class="card-actions">
+                                <button id="monthToggleButton" disabled>
+                                    <i class="fas fa-calendar-alt"></i>
+                                    <span>Bulan Ini</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-content"><div class="chart-container"><div id="piechart_div" style="width:100%; height:100%;"></div></div></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <i class="fas fa-chart-bar"></i>
+                                Jumlah Absensi Kelas
+                            </h2>
+                        </div>
+                        <div class="card-content">
+                            <div class="chart-container">
+                                <div id="barchart_div" style="width:100%; height:100%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-list-ol"></i>
+                            Top 10 Generus
+                        </h2>
+                        <div class="filter-group">
+                            <label for="top10Filter">Tampilkan berdasarkan:</label>
+                            <select id="top10Filter">
+                                <option value="alfa" selected>Alfa Terbanyak</option>
+                                <option value="hadir">Hadir Terbanyak</option>
+                                <option value="izin">Izin Terbanyak</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="top10-table-container"><table id="top10_table"><thead><tr><th>Nama Generus</th><th>Kelas</th><th id="top10Header">Total Alfa</th></tr></thead><tbody id="top10_body"></tbody></table></div>
+                    <p id="top10Empty" style="text-align:center; display:none; margin-top: 15px; padding: 15px; color: var(--gray-600);">
+                        Tidak ada data untuk ditampilkan.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <hr class="section-divider"> <div class="report-section card" style="margin-top: 24px;" id="pusatLaporan">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-file-alt"></i>
+                    Pusat Laporan
+                </h2>
+            </div>
+            
+            <h3>Laporan Harian Kelas</h3>
+            <div class="wa-links-container" id="wa-button-container">
+                <a id="btn-pra-nikah" href="#" target="_blank" class="wa-link">
+                    <i class="fab fa-whatsapp"></i>
+                    Laporan Kelas Mandiri
+                </a>
+                <a id="btn-remaja" href="#" target="_blank" class="wa-link">
+                    <i class="fab fa-whatsapp"></i>
+                    Laporan Kelas Remaja
+                </a>
+                <a id="btn-pra-remaja" href="#" target="_blank" class="wa-link">
+                    <i class="fab fa-whatsapp"></i>
+                    Laporan Kelas Pra Remaja
+                </a>
+                <span id="wa-links-error"></span>
+            </div>
+            
+            <h3>Laporan Bulanan Orang Tua (CSV)</h3>
+            <div class="monthly-report-links-container" id="monthly-report-container">
+                <button id="downloadCsvBtn">
+                    <i class="fas fa-download"></i>
+                    Download Laporan Bulanan (CSV)
+                </button>
+                <span id="report-links-loader">Membuat file CSV...</span>
+                <span id="report-links-error"></span>
+            </div>
+        </div>
+    </div>
+
+    <button class="ai-chat-button" id="aiChatButton">
+        <i class="fas fa-robot"></i>
+    </button>
+    <div class="ai-chat-container" id="aiChatContainer">
+        <div class="ai-chat-header">
+            <div class="ai-chat-title"><i class="fas fa-brain"></i> Asisten AI Absensi</div>
+            <button class="ai-chat-close" id="aiChatClose"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="ai-chat-messages" id="aiChatMessages">
+            <div class="ai-message bot" id="initialGreetingLoader">
+                <div class="ai-typing-indicator" style="padding:0; background:none; border:none;">
+                    <div class="ai-typing-dots">
+                        <div class="ai-typing-dot"></div>
+                        <div class="ai-typing-dot"></div>
+                        <div class="ai-typing-dot"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="ai-chat-input-container">
+            <textarea class="ai-chat-input" id="aiChatInput" placeholder="Ketik pertanyaan..." rows="1"></textarea>
+            <button class="ai-chat-send" id="aiChatSend" disabled><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+    <footer class="main-footer">
+        <div class="footer-media">
+            <a href="http://wa.me/62882007730579?text=Assalamualaikum+Mas+Adit" target="_blank"><i class="fab fa-whatsapp"></i></a>
+            <a href="https://www.instagram.com/mafinntya?igsh=MWs5cHF4dDh6M2p2ZQ==" target="_blank"><i class="fab fa-instagram"></i></a>
+            <a href="https://gend1t.github.io/portofolio-project/" target="_blank"><i class="fab fa-github"></i></a>
+        </div>
+        <p>Copyright &copy;2025 Muhammad Afin Aditya</p>
+    </footer>
+
+    <script type="text/javascript">
+        google.charts.load('current', {'packages':['corechart']});
+        google.charts.setOnLoadCallback(initializePage);
+
+        // =================================================================
+        // ## PENGATURAN KONEKSI API (DEPAN) ##
+        // =================================================================
+        // ⬇️ PENTING! Ganti dengan URL Web App Anda yang sudah di-deploy ⬇️
+        const API_URL = "https://script.google.com/macros/s/GANTI_INI_DENGAN_URL_DEPLOYMENT_ANDA/exec";
+        // =================================================================
+
+
+        window.dashboardData = null;
+        window.topLists = { alfa: [], hadir: [], izin: [] };
+        let currentMonthOption = 'thisMonth';
+
+        function initializePage() {
+            setupEventListeners();
+            loadInitialData();
+            initializeChatbot();
+            loadAiSummary();
+            loadInitialGreeting();
+        }
+
+        function setupEventListeners() {
+            const header = document.getElementById('mainHeader');
+            header.addEventListener('click', function(e) { if (window.innerWidth <= 768) { this.classList.toggle('expanded'); } });
+            document.getElementById('monthToggleButton').addEventListener('click', toggleMonth);
+            document.getElementById('top10Filter').addEventListener('change', updateTopTable);
+            document.getElementById('downloadCsvBtn').addEventListener('click', downloadCsv);
+            // Listener Tombol Absensi Dihapus
+            document.getElementById('btnJadwalGuru').addEventListener('click', () => window.open('https://script.google.com/macros/s/AKfycbx9xHzJynvYFUZe7zZ2j-1PdlX5C6xZxm2WU6lJ4_a_FExvLenOjbsBm6HcAsq7sMM1/exec', '_blank'));
+            document.getElementById('desktopBtnJadwalGuru').addEventListener('click', () => window.open('https://script.google.com/macros/s/AKfycbx9xHzJynvYFUZe7zZ2j-1PdlX5C6xZxm2WU6lJ4_a_FExvLenOjbsBm6HcAsq7sMM1/exec', '_blank'));
+            document.getElementById('btnLaporan').addEventListener('click', () => document.getElementById('pusatLaporan').scrollIntoView({ behavior: 'smooth', block: 'start' }));
+            document.getElementById('desktopBtnLaporan').addEventListener('click', () => document.getElementById('pusatLaporan').scrollIntoView({ behavior: 'smooth', block: 'start' }));
+        }
+        
+        // ==============================================
+        // ## FUNGSI AI SUMMARY DASHBOARD (FETCH) ##
+        // ==============================================
+        function loadAiSummary() {
+          console.log("Memuat AI Summary Dashboard...");
+          fetch(`${API_URL}?action=getSummary`)
+            .then(response => response.json())
+            .then(result => onAiSummarySuccess(result.data)) // Ambil dari 'data'
+            .catch(error => onAiSummaryFailure(error));
+        }
+
+        function onAiSummarySuccess(result) {
+          console.log("AI Summary diterima:", result);
+          const contentDiv = document.getElementById('aiSummaryContent');
+          
+          if (result && result.status === "success") {
+            const htmlSummary = parseMarkdown(result.summary);
+            contentDiv.innerHTML = htmlSummary;
+          } else if (result && result.status === "processing") {
+            const processingMsg = result.summary;
+            contentDiv.innerHTML = `
+              <div class="ai-summary-loader" id="aiSummaryLoader">
+                <div class="loader-spinner" style="width: 20px; height: 20px; border-width: 3px;"></div>
+                <span>${processingMsg}</span>
+              </div>
+            `;
+          } else {
+            const errorMsg = result ? (result.message || "Ringkasan AI tidak tersedia.") : "Error: Respons tidak valid.";
+            contentDiv.innerHTML = `<span style="color:var(--danger);">${errorMsg}</span>`;
+          }
+        }
+
+        function onAiSummaryFailure(error) {
+          console.error("Gagal memuat AI Summary:", error);
+          const contentDiv = document.getElementById('aiSummaryContent');
+          contentDiv.innerHTML = `<span style="color:var(--danger);">Gagal memuat ringkasan: ${error.message}</span>`;
+        }
+        // ==============================================
+        // ## AKHIR FUNGSI AI SUMMARY ##
+        // ==============================================
+
+
+        // ==============================================
+        // ## FUNGSI SAPAAN CHATBOT (FETCH) ##
+        // ==============================================
+        function loadInitialGreeting() {
+          console.log("Memuat sapaan chatbot...");
+          fetch(`${API_URL}?action=getGreeting`)
+            .then(response => response.json())
+            .then(result => onGreetingSuccess(result.data)) // Ambil dari 'data'
+            .catch(error => onGreetingFailure(error));
+        }
+
+        function onGreetingSuccess(greeting) { // 'greeting' sudah data mentah
+          const loader = document.getElementById('initialGreetingLoader');
+          if (loader) loader.remove();
+          addChatMessage(greeting, 'bot');
+        }
+        
+        function onGreetingFailure(error) {
+          const loader = document.getElementById('initialGreetingLoader');
+          if (loader) loader.remove();
+          addChatMessage('Error memuat sapaan: ' + error.message, 'bot');
+        }
+        // ==============================================
+        // ## AKHIR FUNGSI SAPAAN CHATBOT ##
+        // ==============================================
+
+
+        // ==============================================
+        // ## FUNGSI PARSE MARKDOWN (GLOBAL) ##
+        // ==============================================
+        function parseMarkdown(text) {
+            const sanitizer = document.createElement('div');
+            sanitizer.textContent = text;
+            let safeText = sanitizer.innerHTML;
+            let html = safeText.replace(/\n/g, '<br>');
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/^\* (.*$)/gm, '<ul><li>$1</li></ul>');
+            html = html.replace(/<\/ul><ul>/g, ''); 
+            return html;
+        }
+
+        // ==============================================
+        // ## FUNGSI ADD CHAT (GLOBAL) ##
+        // ==============================================
+        function addChatMessage(text, sender) {
+            const chatMessages = document.getElementById('aiChatMessages');
+            if (!chatMessages) { console.error("Chat messages container not found!"); return; }
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `ai-message ${sender}`;
+            const time = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            const htmlText = parseMarkdown(text); 
+            messageDiv.innerHTML = `${htmlText}<div class="ai-message-time">${time}</div>`;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+
+        // ==============================================
+        // ## FUNGSI CHATBOT (FETCH) ##
+        // ==============================================
+        function initializeChatbot() {
+            const chatButton = document.getElementById('aiChatButton');
+            const chatContainer = document.getElementById('aiChatContainer');
+            const chatClose = document.getElementById('aiChatClose');
+            const chatSend = document.getElementById('aiChatSend');
+            const chatInput = document.getElementById('aiChatInput');
+
+            chatButton.addEventListener('click', () => chatContainer.classList.toggle('open'));
+            chatClose.addEventListener('click', () => chatContainer.classList.remove('open'));
+            
+            chatInput.addEventListener('input', () => {
+                chatInput.style.height = 'auto';
+                chatInput.style.height = (chatInput.scrollHeight) + 'px';
+                chatSend.disabled = chatInput.value.trim() === '';
+            });
+
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (!chatSend.disabled) sendChatMessage();
+                }
+            });
+
+            chatSend.addEventListener('click', sendChatMessage);
+
+            function sendChatMessage() {
+                const userInput = chatInput.value.trim();
+                if (!userInput) return;
+                addChatMessage(userInput, 'user');
+                chatInput.value = '';
+                chatInput.style.height = 'auto';
+                chatSend.disabled = true;
+                showTypingIndicator();
+                console.log("Mengirim ke backend:", userInput);
+                
+                // Ubah ke FETCH (POST)
+                fetch(API_URL, {
+                  method: 'POST',
+                  body: JSON.stringify({
+                    action: 'answerChatbot',
+                    userInput: userInput
+                  }),
+                  headers: { 
+                    'Content-Type': 'application/json' 
+                  },
+                  mode: 'cors' // Diperlukan jika API Anda menolak
+                })
+                .then(response => response.json())
+                .then(result => onAiResponse(result.data)) // Ambil dari 'data'
+                .catch(error => onAiFailure(error));
+            }
+
+            function onAiResponse(response) { // 'response' sudah data mentah
+                console.log("Respons dari AI:", response);
+                hideTypingIndicator();
+                addChatMessage(response, 'bot');
+                chatSend.disabled = false;
+            }
+
+            function onAiFailure(error) {
+                console.error("Gagal memanggil backend:", error);
+                hideTypingIndicator();
+                addChatMessage(`Maaf, terjadi error saat menghubungi server: ${error.message}`, 'bot');
+                chatSend.disabled = false;
+            }
+
+            function showTypingIndicator() {
+                const chatMessages = document.getElementById('aiChatMessages');
+                if (!chatMessages) return;
+                const typingDiv = document.createElement('div');
+                typingDiv.className = 'ai-message bot';
+                typingDiv.id = 'typingIndicator';
+                typingDiv.innerHTML = `
+                    <div class="ai-typing-indicator">
+                        AI sedang memproses...
+                        <div class="ai-typing-dots">
+                            <div class="ai-typing-dot"></div>
+                            <div class="ai-typing-dot"></div>
+                            <div class="ai-typing-dot"></div>
+                        </div>
+                    </div>`;
+                chatMessages.appendChild(typingDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            function hideTypingIndicator() {
+                const typingIndicator = document.getElementById('typingIndicator');
+                if (typingIndicator) typingIndicator.remove();
+            }
+        }
+        // ==============================================
+        // ## AKHIR FUNGSI CHATBOT ##
+        // ==============================================
+
+
+        function updateTopTable() {
+            const selectedType = document.getElementById('top10Filter').value;
+            const listData = window.topLists[selectedType] || [];
+            drawTopTable(listData, selectedType);
+        }
+        function drawTopTable(listData, type) {
+            const tbody = document.getElementById('top10_body'); const headerCell = document.getElementById('top10Header'); const emptyMsg = document.getElementById('top10Empty'); tbody.innerHTML = ''; let headerText = 'Total Alfa'; let countClass = 'alfa-count'; if (type === 'hadir') { headerText = 'Total Hadir'; countClass = 'hadir-count'; } else if (type === 'izin') { headerText = 'Total Izin'; countClass = 'izin-count'; } headerCell.textContent = headerText; if (!listData || listData.length === 0) { emptyMsg.style.display = 'block'; return; } emptyMsg.style.display = 'none'; let html = ''; listData.forEach(function(row) { html += '<tr>' + '<td>' + (row[0] || 'N/A') + '</td>' + '<td>' + (row[1] || 'N/A') + '</td>' + '<td><span class="' + countClass + '">' + (row[2] !== undefined ? row[2] : 'N/A') + '</span></td>' + '</tr>'; }); tbody.innerHTML = html;
+        }
+        
+        // --- Fungsi Data (FETCH) ---
+        function loadInitialData() {
+            showLoader();
+            
+            // Ubah ke FETCH (GET)
+            fetch(`${API_URL}?action=getInitialLinks`)
+              .then(response => response.json())
+              .then(result => displayClassLinks(result.data)) // res.data adalah {status: 'sukses', ...}
+              .catch(onInitialFailure);
+              
+            fetchDashboardData(currentMonthOption);
+        }
+        
+        function toggleMonth() {
+            const toggleButton = document.getElementById('monthToggleButton'); currentMonthOption = (currentMonthOption === 'thisMonth') ? 'lastMonth' : 'thisMonth'; toggleButton.innerHTML = `<i class="fas fa-calendar-alt"></i><span>${currentMonthOption === 'thisMonth' ? 'Bulan Ini' : 'Bulan Lalu'}</span>`; toggleButton.disabled = true; fetchDashboardData(currentMonthOption);
+        }
+        
+        function fetchDashboardData(monthOption) {
+            showDashboardLoader();
+            console.log("Fetching dashboard data for:", monthOption);
+            
+            // Ubah ke FETCH (GET)
+            fetch(`${API_URL}?action=getDashboardData&month=${monthOption}`)
+              .then(response => response.json())
+              .then(result => displayDashboardData(result.data)) // res.data adalah {status: 'success', ...}
+              .catch(onFailure);
+        }
+        
+        function displayClassLinks(result) { // 'result' sudah data mentah {status: 'sukses', ...}
+            console.log("Class Links Data Received:", result);
+            hideLoader(); document.getElementById('content').style.display = 'block'; document.querySelector('.report-section').style.display = 'block';
+            if (result.status === "sukses") { const links = result.data; let foundLink = false; if (links.praNikah) { document.getElementById("btn-pra-nikah").href = links.praNikah; document.getElementById("btn-pra-nikah").style.display = "flex"; foundLink = true; } if (links.praRemaja) { document.getElementById("btn-pra-remaja").href = links.praRemaja; document.getElementById("btn-pra-remaja").style.display = "flex"; foundLink = true; } if (links.remaja) { document.getElementById("btn-remaja").href = links.remaja; document.getElementById("btn-remaja").style.display = "flex"; foundLink = true; } if (foundLink) { document.getElementById("wa-button-container").style.display = "flex"; } else { document.getElementById("wa-links-error").textContent = "Link laporan harian belum tersedia."; document.getElementById("wa-links-error").style.display = "flex"; } }
+            else { document.getElementById("wa-links-error").textContent = "Gagal memuat link kelas harian: " + (result.mainError || "Error"); document.getElementById("wa-links-error").style.display = "flex"; } 
+            document.getElementById("downloadCsvBtn").style.display = "flex";
+        }
+        
+        function onInitialFailure(error) {
+            hideLoader(); document.getElementById('content').style.display = 'block'; document.querySelector('.report-section').style.display = 'block'; document.getElementById("wa-links-error").textContent = "Gagal memuat data awal: " + error.message; document.getElementById("wa-links-error").style.display = "flex"; document.getElementById("report-links-error").textContent = "Gagal memuat data awal."; console.error("Initial load failed:", error);
+        }
+
+        // --- FUNGSI displayDashboardData (Tidak berubah) ---
+        function displayDashboardData(data) { // 'data' sudah data mentah {status: 'success', ...}
+            console.log("Dashboard Data Status:", data ? data.status : 'null');
+            hideDashboardLoader();
+            const toggleButton = document.getElementById('monthToggleButton');
+            if (toggleButton) { toggleButton.disabled = false; }
+
+            if (data && data.status === "success") {
+                window.dashboardData = data;
+                window.topLists = { alfa: data.top10Alfa || [], hadir: data.top10Hadir || [], izin: data.top10Izin || [] };
+                updateStats(data);
+                drawCharts();
+                updateTopTable();
+                document.getElementById('statsContainer').style.display = 'grid';
+            } else if (data && data.status === "empty") {
+                clearDashboard(); 
+                document.getElementById('dashboardLoader').innerHTML = "<p>Tidak ada data absensi ditemukan untuk periode yang dipilih.</p>"; 
+                document.getElementById('dashboardLoader').style.display = 'block';
+                document.getElementById('statsContainer').style.display = 'none';
+            } else {
+                onFailure(data ? data.message : 'Unknown error');
+            }
+        }
+        
+        function updateStats(data) {
+            if (data.chartDataOverall && data.chartDataOverall.length > 1) {
+                let hadir = 0, izin = 0, alfa = 0;
+                for (let i = 1; i < data.chartDataOverall.length; i++) {
+                    const row = data.chartDataOverall[i];
+                    if (row[0] === 'Hadir') hadir = row[1];
+                    else if (row[0] === 'Izin') izin = row[1];
+                    else if (row[0] === 'Alfa') alfa = row[1];
+                }
+                document.getElementById('statHadir').textContent = hadir;
+                document.getElementById('statIzin').textContent = izin;
+                document.getElementById('statAlfa').textContent = alfa;
+                document.getElementById('statTotal').textContent = data.totalStudents || 0;
+            }
+        }
+        function onFailure(error) {
+            hideDashboardLoader(); clearDashboard(); const toggleButton = document.getElementById('monthToggleButton'); if(toggleButton) toggleButton.disabled = false;
+            document.getElementById('dashboardLoader').innerHTML = `<p style="color:red;">Gagal memuat data dashboard: ${error.message || error}</p>`; 
+            document.getElementById('dashboardLoader').style.display = 'block'; console.error("Dashboard load failed:", error);
+        }
+        function clearDashboard() {
+            const pieDiv = document.getElementById('piechart_div'); const barDiv = document.getElementById('barchart_div');
+            if (pieDiv) pieDiv.innerHTML = ''; if (barDiv) barDiv.innerHTML = '';
+            document.getElementById('top10_body').innerHTML = ''; document.getElementById('top10Empty').style.display = 'block';
+        }
+        
+        // --- Fungsi Download CSV (FETCH) ---
+        function downloadCsv() {
+            document.getElementById("report-links-loader").style.display = "inline";
+            document.getElementById("report-links-error").textContent = "";
+            this.disabled = true;
+            
+            // Ubah ke FETCH (GET)
+            fetch(`${API_URL}?action=getMonthlyReport`)
+              .then(response => response.json())
+              .then(result => handleCsvData(result.data)) // res.data adalah {status: 'success', ...}
+              .catch(onCsvFailure);
+        }
+        
+        function handleCsvData(result) { // 'result' sudah data mentah {status: 'success', ...}
+            document.getElementById("report-links-loader").style.display = "none";
+            document.getElementById("downloadCsvBtn").disabled = false;
+            if (result.status === "success") {
+                const csvArray = result.data; const csvHeader = ["nomor wa", "isi pesan"];
+                const csvContent = [ csvHeader.map(cell => `"${(cell || '').toString().replace(/"/g, '""')}"`).join(','), ...csvArray.map(row => row.map(cell => `"${(cell || '').toString().replace(/"/g, '""')}"`).join(',')) ].join('\n');
+                const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement("a"); const url = URL.createObjectURL(blob); link.setAttribute("href", url); const now = new Date(); const fileName = `laporan_bulanan_${now.getFullYear()}${('0'+(now.getMonth()+1)).slice(-2)}${('0'+now.getDate()).slice(-2)}.csv`; link.setAttribute("download", fileName); link.style.visibility = 'hidden'; document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            } else if (result.status === "empty") {
+                document.getElementById("report-links-error").textContent = "Tidak ada data absensi untuk membuat laporan bulanan.";
+                document.getElementById("report-links-error").style.display = "inline";
+            } else { onCsvFailure(result.message || "Error generating CSV"); }
+        }
+        function onCsvFailure(error) {
+            document.getElementById("report-links-loader").style.display = "none";
+            document.getElementById("downloadCsvBtn").disabled = false;
+            document.getElementById("report-links-error").textContent = "Gagal membuat file CSV: " + error;
+            document.getElementById("report-links-error").style.display = "inline";
+            console.error("CSV generation failed:", error);
+        }
+
+        // --- Fungsi menggambar grafik (Tidak berubah) ---
+        let resizeTimer;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function() { if (window.dashboardData) { drawCharts(); } }, 250);
+        });
+        function drawCharts() { 
+            if (!window.dashboardData) { console.error("No dashboard data available for charts"); return; }
+            const isMobile = window.innerWidth <= 768;
+            const pieData = google.visualization.arrayToDataTable(window.dashboardData.chartDataOverall || [['Status', 'Jumlah'], ['Tidak Ada Data', 1]]);
+            const pieOptions = {
+                title: '', pieHole: 0.4,
+                colors: ['#1e8e3e', '#17a2b8', '#d93025'],
+                chartArea: { left: isMobile ? 5 : 15, top: isMobile ? 5 : 15, width: isMobile ? '98%' : '90%', height: isMobile ? '90%' : '80%'},
+                legend: { position: isMobile ? 'labeled' : 'labeled', alignment: 'center', textStyle: { fontSize: isMobile ? 12 : 14, fontName: 'Segoe UI', bold: true }, maxLines: 3 },
+                pieSliceText: 'percentage', pieSliceTextStyle: { fontSize: isMobile ? 12 : 14, color: 'white', bold: true },
+                tooltip: { text: 'percentage', textStyle: { fontSize: isMobile ? 12 : 14 } },
+                backgroundColor: 'transparent', fontSize: isMobile ? 12 : 14, fontName: 'Segoe UI',
+                width: '100%', height: '100%'
+            };
+            const pieChart = new google.visualization.PieChart(document.getElementById('piechart_div'));
+            pieChart.draw(pieData, pieOptions);
+
+            const barData = google.visualization.arrayToDataTable(window.dashboardData.chartDataPerClass || [['Kelas', 'Hadir', 'Izin', 'Alfa'], ['Tidak Ada Data', 0, 0, 0]]);
+            const barOptions = {
+                title: '', colors: ['#1e8e3e', '#17a2b8', '#d93025'],
+                chartArea: { left: isMobile ? 80 : 100, top: isMobile ? 20 : 30, width: isMobile ? '75%' : '70%', height: isMobile ? '75%' : '75%'},
+                legend: { position: 'top', alignment: 'center', textStyle: { fontSize: isMobile ? 12 : 14, fontName: 'Segoe UI', bold: true } },
+                hAxis: { title: 'Jumlah', minValue: 0, textStyle: { fontSize: isMobile ? 11 : 13, fontName: 'Segoe UI' }, titleTextStyle: { fontSize: isMobile ? 12 : 14, fontName: 'Segoe UI', bold: true } },
+                vAxis: { title: 'Kelas', textStyle: { fontSize: isMobile ? 11 : 13, fontName: 'Segoe UI' }, titleTextStyle: { fontSize: isMobile ? 12 : 14, fontName: 'Segoe UI', bold: true } },
+                bar: { groupWidth: isMobile ? '60%' : '70%' },
+                backgroundColor: 'transparent', fontSize: isMobile ? 12 : 14, fontName: 'Segoe UI',
+                width: '100%', height: '100%'
+            };
+            const barChart = new google.visualization.ColumnChart(document.getElementById('barchart_div'));
+            barChart.draw(barData, barOptions);
+        }
+
+        // --- Helper Loaders (Tidak berubah) ---
+        function showLoader() { document.getElementById('loader').style.display = 'flex'; }
+        function hideLoader() { document.getElementById('loader').style.display = 'none'; }
+        function showDashboardLoader() { document.getElementById('dashboardLoader').style.display = 'flex'; document.getElementById('dashboardContent').style.display = 'none';}
+        function hideDashboardLoader() { document.getElementById('dashboardLoader').style.display = 'none'; document.getElementById('dashboardContent').style.display = 'block';}
+    </script>
+
+    <footer class="main-footer">
+        <div class="footer-media">
+            <a href="http://wa.me/62882007730579?text=Assalamualaikum+Mas+Adit" target="_blank"><i class="fab fa-whatsapp"></i></a>
+            <a href="https://www.instagram.com/mafinntya?igsh=MWs5cHF4dDh6M2p2ZQ==" target="_blank"><i class="fab fa-instagram"></i></a>
+            <a href="https://gend1t.github.io/portofolio-project/" target="_blank"><i class="fab fa-github"></i></a>
+        </div>
+        <p>Copyright &copy;2025 Muhammad Afin Aditya</p>
+    </footer>
+
+</body>
+</html>
